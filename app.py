@@ -4,7 +4,7 @@ import os
 
 # Set up page layout to occupy full width with a custom page title
 st.set_page_config(
-    page_title="Breeze | Executive Performance Radar", 
+    page_title="Dhurandhar League", 
     layout="wide", 
     page_icon="⚡"
 )
@@ -118,7 +118,6 @@ st.markdown("""
 """, unsafe_allow_html=True)
 
 # App Logo Header Banner
-st.markdown('<p class="title-banner">BREEZE // Operational Performance Radar</p>', unsafe_allow_html=True)
 st.markdown('<div class="subtitle-league-container"><span class="subtitle-league">DHURANDAR LEAGUE</span></div>', unsafe_allow_html=True)
 st.markdown("---")
 
