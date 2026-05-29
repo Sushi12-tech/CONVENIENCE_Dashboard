@@ -73,12 +73,29 @@ st.markdown("""
         
         /* Smooth Custom styled title banner */
         .title-banner {
-            background: linear-gradient(90px, #1f6feb, #58a6ff);
+            background: linear-gradient(90deg, #1f6feb, #58a6ff);
             -webkit-background-clip: text;
             -webkit-text-fill-color: transparent;
             font-weight: 800;
             font-size: 42px;
             margin-bottom: 0px;
+        }
+
+        /* Bold, High-Impact, Mechanical Subheading Design */
+        .subtitle-league-container {
+            margin-top: -5px;
+            margin-bottom: 25px;
+            padding: 2px 0px;
+        }
+        .subtitle-league {
+            font-family: 'Segoe UI', -apple-system, BlinkMacSystemFont, Roboto, sans-serif;
+            font-weight: 900 !important;
+            font-size: 28px !important;
+            letter-spacing: 5px !important;
+            color: #ffffff !important;
+            text-transform: uppercase !important;
+            text-shadow: 0 0 15px rgba(88, 166, 255, 0.75) !important;
+            display: block !important;
         }
         
         /* Leaderboard Row List Styling */
@@ -102,7 +119,7 @@ st.markdown("""
 
 # App Logo Header Banner
 st.markdown('<p class="title-banner">BREEZE // Operational Performance Radar</p>', unsafe_allow_html=True)
-st.markdown('<p class="subtitle-league">DHURANDAR LEAGUE</p>', unsafe_allow_html=True)
+st.markdown('<div class="subtitle-league-container"><span class="subtitle-league">DHURANDAR LEAGUE</span></div>', unsafe_allow_html=True)
 st.markdown("---")
 
 # ------------------------------------------------------------------
