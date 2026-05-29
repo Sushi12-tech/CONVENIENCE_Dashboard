@@ -64,11 +64,12 @@ st.markdown("""
             font-size: 13px;
             display: inline-block;
             text-align: center;
+            min-width: 80px;
         }
         .rank-1 { background-color: rgba(212, 175, 55, 0.2); color: #ffd700; border: 1px solid #ffd700; }
         .rank-2 { background-color: rgba(192, 192, 192, 0.2); color: #c0c0c0; border: 1px solid #c0c0c0; }
         .rank-3 { background-color: rgba(205, 127, 50, 0.2); color: #cd7f32; border: 1px solid #cd7f32; }
-        .rank-other { background-color: rgba(48, 54, 61, 0.5); color: #8b949e; border: 1px solid #30363d; }
+        .rank-other { background-color: rgba(48, 54, 61, 0.4); color: #c9d1d9; border: 1px solid #30363d; }
         
         /* Smooth Custom styled title banner */
         .title-banner {
@@ -78,6 +79,23 @@ st.markdown("""
             font-weight: 800;
             font-size: 42px;
             margin-bottom: 0px;
+        }
+        
+        /* Leaderboard Row List Styling */
+        .leaderboard-row {
+            display: flex; 
+            justify-content: space-between; 
+            align-items: center; 
+            background: linear-gradient(90deg, #161b22, #0d1117);
+            padding: 16px 24px; 
+            margin-bottom: 10px; 
+            border-radius: 12px; 
+            border: 1px solid #30363d;
+            transition: border-color 0.2s ease, background-color 0.2s ease;
+        }
+        .leaderboard-row:hover {
+            border-color: #444c56;
+            background: #1c2128;
         }
     </style>
 """, unsafe_allow_html=True)
@@ -94,7 +112,7 @@ DHURANDAR_SHARE_ID = "1N4kEbF621Nhzjg4eJfGz9fkGIXEQ_LA5"
 OUTLET_MASTER_SHARE_ID = "1kxGk5IvkPLGLE0Dg6vCxQ1NeT8V8xPQu" 
 RADAR_ROUTE_SHARE_ID = "1AKW089LhV37onfSEmk4H6l86f4MsQTCr"
 
-# Formulating direct-download CSV export endpoints for raw files on Drive
+# Formulating direct-download links
 URL_BREEZE = f"https://docs.google.com/uc?export=download&id={DHURANDAR_SHARE_ID}"
 URL_MASTER = f"https://docs.google.com/uc?export=download&id={OUTLET_MASTER_SHARE_ID}"
 URL_ROUTE = f"https://docs.google.com/uc?export=download&id={RADAR_ROUTE_SHARE_ID}"
@@ -162,13 +180,12 @@ if df_breeze is not None and df_master is not None and df_route is not None:
     
     if not df_global_top3.empty:
         with st.expander("👑 VIEW GLOBAL LEAGUE LEADERBOARD (RANK 1-3 QUALIFIERS)", expanded=False):
-            # Apply custom styled HTML display rows for the elite league instead of default tables
             for idx, row in df_global_top3.iterrows():
                 r = int(row['Rank'])
-                badge_class = f"rank-{r}" if r <= 3 else "rank-other"
+                badge_class = f"rank-{r}"
                 
                 st.markdown(f"""
-                    <div style="display: flex; justify-content: space-between; align-items: center; background-color: #161b22; padding: 12px 20px; margin-bottom: 8px; border-radius: 8px; border-left: 4px solid #1f6feb;">
+                    <div class="leaderboard-row" style="border-left: 4px solid #1f6feb;">
                         <div style="display: flex; align-items: center; gap: 15px;">
                             <span class="rank-badge {badge_class}">RANK {r}</span>
                             <strong style="color: #ffffff; font-size: 16px;">{row['DS Name']}</strong>
@@ -203,13 +220,11 @@ if df_breeze is not None and df_master is not None and df_route is not None:
         df_ae_filtered['Resolved_Mapped'] = df_ae_filtered['Resolved_Mapped'].fillna(0).astype(int)
         df_ae_filtered['Resolved_Visits'] = df_ae_filtered['Resolved_Visits'].fillna(0).astype(int)
         
-        # Summary variables computation
         total_ds_count = len(df_ae_filtered)
         total_outlets_mapped = df_ae_filtered['Resolved_Mapped'].sum()
         total_effective_visits = df_ae_filtered['Resolved_Visits'].sum()
         pct_uov = (total_effective_visits / total_outlets_mapped * 100) if total_outlets_mapped > 0 else 0.0
 
-        # Injecting structural HTML cards dynamically
         c1, c2, c3 = st.columns(3)
         with c1:
             st.markdown(f"""
@@ -236,26 +251,57 @@ if df_breeze is not None and df_master is not None and df_route is not None:
         st.markdown("<br><br>", unsafe_allow_html=True)
         
         # ------------------------------------------------------------------
-        # UI COMPONENT: 🏆 BRANDED AE LOCAL LEADERBOARD GRID
+        # NEW DESIGN COMPONENT: CUSTOM STYLED PERFORMANCE STANDINGS CIRCLE
         # ------------------------------------------------------------------
         st.markdown(f"### 🚀 Performance Standings: Executive Circle ({selected_ae})")
         
+        # Extract top 3 local area representatives
         top_3_ds = df_ae_filtered.sort_values(by='Rank', ascending=True).head(3)
         
-        # Format layout data structures seamlessly
-        display_leaderboard = top_3_ds[['Rank', 'DS Name', 'DS Type', 'WD Code (Linked)', 'Resolved_Mapped', 'Resolved_Visits']].copy()
-        display_leaderboard.columns = ['Rank Position', 'Digital Sales Representative (DS)', 'DS Type', 'Linked WD Code', 'Outlets Mapped', 'Till Date Visits']
-        display_leaderboard = display_leaderboard.reset_index(drop=True)
-        
-        # Render clean UI interactive table grid configured with modern design values
-        st.dataframe(
-            display_leaderboard, 
-            use_container_width=True,
-            column_config={
-                "Rank Position": st.column_config.NumberColumn("Rank Position 🏅", format="%d"),
-                "Outlets Mapped": st.column_config.NumberColumn("Outlets Mapped", format="%d"),
-                "Till Date Visits": st.column_config.NumberColumn("Till Date Visits", format="%d")
-            }
-        )
+        for idx, row in top_3_ds.iterrows():
+            r = int(row['Rank']) if pd.notna(row['Rank']) else "N/A"
+            
+            # Determine appropriate badge accent color configuration based on position numbers
+            if r == 1:
+                badge_class = "rank-1"
+                row_border = "border-left: 5px solid #ffd700;"
+            elif r == 2:
+                badge_class = "rank-2"
+                row_border = "border-left: 5px solid #c0c0c0;"
+            elif r == 3:
+                badge_class = "rank-3"
+                row_border = "border-left: 5px solid #cd7f32;"
+            else:
+                badge_class = "rank-other"
+                row_border = "border-left: 5px solid #30363d;"
+                
+            wd_code_display = row['WD Code (Linked)'] if pd.notna(row['WD Code (Linked)']) else 'N/A'
+            
+            # Rendering custom stylized HTML row components inside the dashboard UI
+            st.markdown(f"""
+                <div class="leaderboard-row" style="{row_border}">
+                    <div style="display: flex; align-items: center; gap: 20px;">
+                        <span class="rank-badge {badge_class}">RANK {r}</span>
+                        <div>
+                            <div style="color: #ffffff; font-size: 18px; font-weight: 700;">{row['DS Name']}</div>
+                            <div style="color: #8b949e; font-size: 13px; margin-top: 2px;">
+                                Type: <span style="color: #c9d1d9;">{row['DS Type']}</span> | 
+                                WD Code: <span style="color: #58a6ff; font-weight: 600;">{wd_code_display}</span>
+                            </div>
+                        </div>
+                    </div>
+                    <div style="display: flex; gap: 30px; text-align: right;">
+                        <div>
+                            <div style="color: #8b949e; font-size: 12px; text-transform: uppercase; letter-spacing: 0.5px;">Outlets Mapped</div>
+                            <div style="color: #ffffff; font-size: 20px; font-weight: bold; margin-top: 4px;">{int(row['Resolved_Mapped'])}</div>
+                        </div>
+                        <div>
+                            <div style="color: #8b949e; font-size: 12px; text-transform: uppercase; letter-spacing: 0.5px;">Till Date Visits</div>
+                            <div style="color: #34d399; font-size: 20px; font-weight: bold; margin-top: 4px;">{int(row['Resolved_Visits'])}</div>
+                        </div>
+                    </div>
+                </div>
+            """, unsafe_allow_html=True)
+            
     else:
         st.error(f"No records indexed under area segment parameter: {selected_ae}")
