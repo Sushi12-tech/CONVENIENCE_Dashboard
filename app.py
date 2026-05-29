@@ -1,38 +1,109 @@
 import streamlit as st
 import pandas as pd
+import os
 
-# Set up page layout to occupy the full width of the screen
-st.set_page_config(page_title="AE & DS Performance Dashboard", layout="wide", page_icon="📊")
+# Set up page layout to occupy full width with a custom page title
+st.set_page_config(
+    page_title="Breeze | Executive Performance Radar", 
+    layout="wide", 
+    page_icon="⚡"
+)
 
-# Dashboard Header
-st.title("📊 AE & DS Performance Dashboard")
+# ------------------------------------------------------------------
+# PREMIUM CUSTOM DARK-MODE CSS INJECTION
+# ------------------------------------------------------------------
+st.markdown("""
+    <style>
+        /* Global App Background and Text colors */
+        .stApp {
+            background-color: #0d1117;
+            color: #c9d1d9;
+        }
+        
+        /* Modern Glassmorphic Container Cards */
+        .metric-card {
+            background: linear-gradient(135px, rgba(22, 27, 34, 0.8), rgba(13, 17, 23, 0.8));
+            border: 1px solid #30363d;
+            border-radius: 16px;
+            padding: 24px;
+            box-shadow: 0 8px 32px 0 rgba(0, 0, 0, 0.37);
+            backdrop-filter: blur(8px);
+            -webkit-backdrop-filter: blur(8px);
+            transition: transform 0.3s ease, border-color 0.3s ease;
+        }
+        .metric-card:hover {
+            transform: translateY(-5px);
+            border-color: #58a6ff;
+        }
+        
+        /* Clean typography styles */
+        .metric-label {
+            font-size: 14px;
+            text-transform: uppercase;
+            letter-spacing: 1.5px;
+            color: #8b949e;
+            font-weight: 600;
+            margin-bottom: 8px;
+        }
+        .metric-value {
+            font-size: 36px;
+            font-weight: 700;
+            color: #ffffff;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+        }
+        .metric-glow {
+            text-shadow: 0 0 12px rgba(88, 166, 255, 0.6);
+            color: #58a6ff;
+        }
+        
+        /* Premium Badges for Leaderboard ranks */
+        .rank-badge {
+            padding: 6px 12px;
+            border-radius: 20px;
+            font-weight: bold;
+            font-size: 13px;
+            display: inline-block;
+            text-align: center;
+        }
+        .rank-1 { background-color: rgba(212, 175, 55, 0.2); color: #ffd700; border: 1px solid #ffd700; }
+        .rank-2 { background-color: rgba(192, 192, 192, 0.2); color: #c0c0c0; border: 1px solid #c0c0c0; }
+        .rank-3 { background-color: rgba(205, 127, 50, 0.2); color: #cd7f32; border: 1px solid #cd7f32; }
+        .rank-other { background-color: rgba(48, 54, 61, 0.5); color: #8b949e; border: 1px solid #30363d; }
+        
+        /* Smooth Custom styled title banner */
+        .title-banner {
+            background: linear-gradient(90px, #1f6feb, #58a6ff);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            font-weight: 800;
+            font-size: 42px;
+            margin-bottom: 0px;
+        }
+    </style>
+""", unsafe_allow_html=True)
+
+# App Logo Header Banner
+st.markdown('<p class="title-banner">BREEZE // Operational Performance Radar</p>', unsafe_allow_html=True)
+st.markdown("<p style='color: #8b949e; margin-top:-10px;'>Real-time automated distribution analytics & field rankings</p>", unsafe_allow_html=True)
 st.markdown("---")
 
-# ==================================================================
-# ⚠️ ADMIN CONFIGURATION: PASTE YOUR GOOGLE DRIVE FILE SHARING IDs HERE
-# ==================================================================
-# To get these IDs, share each file in Google Drive as "Anyone with link can view".
-# Copy the link and extract the long string of letters/numbers between '/d/' and '/edit'.
+# ------------------------------------------------------------------
+# CONFIGURATION: GOOGLE DRIVE FILE SHARING IDs
+# ------------------------------------------------------------------
 DHURANDAR_SHARE_ID = "1N4kEbF621Nhzjg4eJfGz9fkGIXEQ_LA5" 
 OUTLET_MASTER_SHARE_ID = "1kxGk5IvkPLGLE0Dg6vCxQ1NeT8V8xPQu" 
 RADAR_ROUTE_SHARE_ID = "1AKW089LhV37onfSEmk4H6l86f4MsQTCr"
 
-# Formulating direct-download CSV export endpoints for Google Drive
+# Formulating direct-download CSV export endpoints for raw files on Drive
 URL_BREEZE = f"https://docs.google.com/uc?export=download&id={DHURANDAR_SHARE_ID}"
 URL_MASTER = f"https://docs.google.com/uc?export=download&id={OUTLET_MASTER_SHARE_ID}"
 URL_ROUTE = f"https://docs.google.com/uc?export=download&id={RADAR_ROUTE_SHARE_ID}"
-# ------------------------------------------------------------------
-# 1. LIVE CLOUD DATA LOADING (WITH AUTOMATIC 1-HOUR CACHE REFRESH)
-# ------------------------------------------------------------------
-@st.cache_data(ttl=3600)  # Caches data for 1 hour for high performance, then auto-refreshes
+
+@st.cache_data(ttl=3600)
 def load_live_cloud_data():
-    # If the default placeholder strings haven't been swapped yet, halt cleanly
     if "YOUR_GOOGLE_DRIVE_ID" in DHURANDAR_SHARE_ID:
         return None, None, None, "setup_needed"
-        
     try:
-        # Pulling files directly from your central Google Drive cloud
-        # Skiprows=2 accommodates the dual-header structure inside the Breeze Summary Sheet
         df_breeze = pd.read_csv(URL_BREEZE, skiprows=2, encoding="latin-1")
         df_master = pd.read_csv(URL_MASTER, encoding="latin-1")
         df_route = pd.read_csv(URL_ROUTE, encoding="latin-1")
@@ -40,166 +111,151 @@ def load_live_cloud_data():
     except Exception as e:
         return None, None, None, str(e)
 
-# Run the live network cloud fetch sequence
 df_breeze, df_master, df_route, status_msg = load_live_cloud_data()
 
-# Failsafe error window if IDs are missing or link sharing permissions are restricted
 if status_msg == "setup_needed":
-    st.info("👋 Welcome to your Shared Field Performance Dashboard!")
-    st.warning("⚠️ **Admin Setup Required:** Please open `app.py` and replace the placeholder Google Drive File IDs (lines 14-16) with your live spreadsheet sharing keys.")
+    st.info("👋 Welcome to Breeze!")
+    st.warning("⚠️ **Configuration Key Missing:** Please open your `app.py` script file and input your active Google Drive sharing hashes to enable cloud streaming.")
     st.stop()
 elif status_msg != "success":
-    st.error("💥 Critical Connection Error while fetching files from Google Drive cloud server.")
-    st.markdown(f"**Technical Details:** {status_msg}")
-    st.info("💡 **Troubleshooting Checklist:** Ensure your Google Drive files are set to *'Anyone with the link can view'*. If access is restricted, the cloud server will block the connection request.")
+    st.error("💥 Cloud Connection Aborted.")
+    st.markdown(f"**Error Details:** `{status_msg}`")
     st.stop()
 
 # ------------------------------------------------------------------
-# 2. DATA SANITIZATION & CROSS-SHEET FIELD MAPPING
+# DATA PIPELINE & CALCULATIONS ENGINE
 # ------------------------------------------------------------------
 if df_breeze is not None and df_master is not None and df_route is not None:
-    st.sidebar.success("🟢 Connected to Live Google Drive Storage")
     
-    # Standardize spaces and text formats across common linkage keys
+    # Text sanitization pipeline
     df_breeze['AE ID'] = df_breeze['AE ID'].astype(str).str.strip()
     df_breeze['DS ID_str'] = df_breeze['DS ID'].astype(str).str.strip()
     df_breeze['DS Type'] = df_breeze['DS Type'].astype(str).str.strip()
     df_breeze['Rank'] = pd.to_numeric(df_breeze['Rank'], errors='coerce')
     
-    df_master['AE ID'] = df_master['AE ID'].astype(str).str.strip()
     df_master['DS/TL ID_str'] = df_master['DS/TL ID'].astype(str).str.strip()
-    
     df_route['DS Id_str'] = df_route['DS Id'].astype(str).str.strip()
     
-    # Generate indexed lookup tables (Acts as lightning-fast backend VLOOKUP arrays)
+    # Map out cross-sheet relationships
     ds_to_wd_dict = df_master.groupby('DS/TL ID_str')['WD ID'].first().to_dict()
     van_ds_to_wd_dict = df_route.groupby('DS Id_str')['WD Code'].first().to_dict()
     
-    # Routing function to link active WD Codes based on structural segment parameters
     def assign_linked_wd_code(row):
         is_van = "van" in str(row['DS Type']).lower()
         ds_id = row['DS ID_str']
-        
         if is_van and ds_id in van_ds_to_wd_dict:
             return van_ds_to_wd_dict[ds_id]
-        else:
-            return ds_to_wd_dict.get(ds_id, None)
+        return ds_to_wd_dict.get(ds_id, None)
             
     df_breeze['WD Code (Linked)'] = df_breeze.apply(assign_linked_wd_code, axis=1)
-    
-    # Extract alpha-sorted unique values list to populate the autocomplete dropdown window
     unique_ae_ids = sorted(df_breeze['AE ID'].dropna().unique())
     
-    # User Lookup Dropdown Widget
-    st.subheader("🔍 Select or Search AE ID")
-    selected_ae = st.selectbox(
-        "Type or select an Executive AE ID to view live operational metrics:",
-        options=unique_ae_ids,
-        index=0
-    )
+    # Styled Input Selector Widget Block
+    col_sb, _ = st.columns([2, 2])
+    with col_sb:
+        selected_ae = st.selectbox("🌐 CHOOSE EXECUTIVE AREA ENGINEER ID", options=unique_ae_ids, index=0)
     
     # ------------------------------------------------------------------
-    # 3. GLOBAL TOP 3 LEAGUE LEADERBOARD
+    # UI COMPONENT: 🏆 GLOBAL DHURANDAR LEAGUE EXPANDER
     # ------------------------------------------------------------------
-    st.markdown("### 🏆 Global Dhurandar League: Top 3 Ranks (All Over Data)")
-    
-    # Filter global records matching overall Rank positions 1, 2, or 3
     df_global_top3 = df_breeze[df_breeze['Rank'].isin([1, 2, 3])].sort_values(by='Rank', ascending=True).copy()
     
     if not df_global_top3.empty:
-        # Create clear formatting columns for presentation layout
-        display_global = df_global_top3[['Rank', 'DS Name', 'DS Type', 'AE ID', 'WD Code (Linked)']].copy()
-        display_global.columns = ['Rank 🏅', 'DS Name', 'DS Type', 'Mapped AE ID', 'Linked WD Code']
-        display_global = display_global.reset_index(drop=True)
-        
-        # Enclose within an expandable wrapper segment to maximize narrow device screen layout usability
-        with st.expander("👁️ Click to View / Hide Global Rank 1, 2 & 3 Performers Table", expanded=True):
-            st.dataframe(
-                display_global,
-                use_container_width=True,
-                column_config={
-                    "Rank 🏅": st.column_config.NumberColumn("Rank 🏅", format="%d")
-                }
-            )
-    else:
-        st.warning("No global data found matching Rank 1, 2, or 3 parameters.")
-        
-    st.markdown("---")
+        with st.expander("👑 VIEW GLOBAL LEAGUE LEADERBOARD (RANK 1-3 QUALIFIERS)", expanded=False):
+            # Apply custom styled HTML display rows for the elite league instead of default tables
+            for idx, row in df_global_top3.iterrows():
+                r = int(row['Rank'])
+                badge_class = f"rank-{r}" if r <= 3 else "rank-other"
+                
+                st.markdown(f"""
+                    <div style="display: flex; justify-content: space-between; align-items: center; background-color: #161b22; padding: 12px 20px; margin-bottom: 8px; border-radius: 8px; border-left: 4px solid #1f6feb;">
+                        <div style="display: flex; align-items: center; gap: 15px;">
+                            <span class="rank-badge {badge_class}">RANK {r}</span>
+                            <strong style="color: #ffffff; font-size: 16px;">{row['DS Name']}</strong>
+                            <span style="color: #8b949e; font-size: 13px;">({row['DS Type']})</span>
+                        </div>
+                        <div>
+                            <span style="color: #8b949e; font-size: 13px;">AE ID:</span> <strong style="color: #58a6ff;">{row['AE ID']}</strong>
+                            <span style="margin-left: 15px; color: #8b949e; font-size: 13px;">WD Code:</span> <strong style="color: #58a6ff;">{row['WD Code (Linked)'] if pd.notna(row['WD Code (Linked)']) else 'N/A'}</strong>
+                        </div>
+                    </div>
+                """, unsafe_allow_html=True)
+
+    st.markdown("<br>", unsafe_allow_html=True)
     
     # ------------------------------------------------------------------
-    # 4. INDIVIDUAL REGIONAL FILTERS & HIGH-LEVEL KPI CARDS
+    # UI COMPONENT: 📊 LIVE METRIC GLASS CARDS
     # ------------------------------------------------------------------
     df_ae_filtered = df_breeze[df_breeze['AE ID'] == selected_ae].copy()
     
     if not df_ae_filtered.empty:
-        st.subheader(f"📊 Live Dashboard: Executive Summary for {selected_ae}")
-        
-        # Address multi-header duplicate name assignments injected automatically by pandas engine
-        # index 2 (.2) references target metrics under the strict Radar tracking matrix for Van DS
+        # Resolve target duplicate data tracking sub-columns from Excel sheets
         qual_cols = [c for c in df_breeze.columns if 'till date qual' in c.lower()]
         van_visit_col = qual_cols[2] if len(qual_cols) >= 3 else qual_cols[0]
         
-        # Formulate conditional cross-segment field parsers
         def get_resolved_metrics(row):
             is_van = "van" in str(row['DS Type']).lower()
             if is_van:
-                mapped = pd.to_numeric(row['Outlet Mapped'], errors='coerce')
-                visits = pd.to_numeric(row[van_visit_col], errors='coerce')
-            else:
-                mapped = pd.to_numeric(row['Outlets Mapped'], errors='coerce')
-                visits = pd.to_numeric(row['Till date Visit'], errors='coerce')
-            return pd.Series([mapped, visits])
+                return pd.Series([pd.to_numeric(row['Outlet Mapped'], errors='coerce'), pd.to_numeric(row[van_visit_col], errors='coerce')])
+            return pd.Series([pd.to_numeric(row['Outlets Mapped'], errors='coerce'), pd.to_numeric(row['Till date Visit'], errors='coerce')])
 
-        # Execute data mappings across filtered sub-rows
         df_ae_filtered[['Resolved_Mapped', 'Resolved_Visits']] = df_ae_filtered.apply(get_resolved_metrics, axis=1)
-        
-        # Enforce numeric fallback parameters to bypass NaN breaks
         df_ae_filtered['Resolved_Mapped'] = df_ae_filtered['Resolved_Mapped'].fillna(0).astype(int)
         df_ae_filtered['Resolved_Visits'] = df_ae_filtered['Resolved_Visits'].fillna(0).astype(int)
         
-        # Calculate scorecard summation fields
+        # Summary variables computation
         total_ds_count = len(df_ae_filtered)
         total_outlets_mapped = df_ae_filtered['Resolved_Mapped'].sum()
         total_effective_visits = df_ae_filtered['Resolved_Visits'].sum()
+        pct_uov = (total_effective_visits / total_outlets_mapped * 100) if total_outlets_mapped > 0 else 0.0
+
+        # Injecting structural HTML cards dynamically
+        c1, c2, c3 = st.columns(3)
+        with c1:
+            st.markdown(f"""
+                <div class="metric-card">
+                    <div class="metric-label">👥 Total DS Workforce</div>
+                    <div class="metric-value">{total_ds_count} <span style="font-size:18px; color:#58a6ff;">Reps</span></div>
+                </div>
+            """, unsafe_allow_html=True)
+        with c2:
+            st.markdown(f"""
+                <div class="metric-card">
+                    <div class="metric-label">📍 Total Outlets Mapped</div>
+                    <div class="metric-value">{total_outlets_mapped:,} <span style="font-size:18px; color:#34d399;">Stores</span></div>
+                </div>
+            """, unsafe_allow_html=True)
+        with c3:
+            st.markdown(f"""
+                <div class="metric-card">
+                    <div class="metric-label">📈 Overall Efficiency (% UOV)</div>
+                    <div class="metric-value metric-glow">{pct_uov:.2f}%</div>
+                </div>
+            """, unsafe_allow_html=True)
+
+        st.markdown("<br><br>", unsafe_allow_html=True)
         
-        # % UOV Calculation logic
-        if total_outlets_mapped > 0:
-            pct_uov = (total_effective_visits / total_outlets_mapped) * 100
-        else:
-            pct_uov = 0.0
-            
-        # Display horizontal dashboard UI KPI elements block
-        m_col1, m_col2, m_col3 = st.columns(3)
-        with m_col1:
-            st.metric(label="👥 Total DS Count", value=f"{total_ds_count}")
-        with m_col2:
-            st.metric(label="📍 Total Outlets Mapped", value=f"{total_outlets_mapped:,}")
-        with m_col3:
-            st.metric(label="📈 Percentage UOV", value=f"{pct_uov:.2f}%")
-            
         # ------------------------------------------------------------------
-        # 5. FILTERED LOCAL LEADERBOARD MATRIX
+        # UI COMPONENT: 🏆 BRANDED AE LOCAL LEADERBOARD GRID
         # ------------------------------------------------------------------
-        st.markdown("### 🏆 Top 3 DS Performance Leaderboard (Selected AE Only)")
+        st.markdown(f"### 🚀 Performance Standings: Executive Circle ({selected_ae})")
         
-        # Extract targeted regional winners ranking positions
         top_3_ds = df_ae_filtered.sort_values(by='Rank', ascending=True).head(3)
         
-        # Format layout data tracking elements
+        # Format layout data structures seamlessly
         display_leaderboard = top_3_ds[['Rank', 'DS Name', 'DS Type', 'WD Code (Linked)', 'Resolved_Mapped', 'Resolved_Visits']].copy()
         display_leaderboard.columns = ['Rank Position', 'Digital Sales Representative (DS)', 'DS Type', 'Linked WD Code', 'Outlets Mapped', 'Till Date Visits']
         display_leaderboard = display_leaderboard.reset_index(drop=True)
         
-        # Construct main presentation interactive grid
+        # Render clean UI interactive table grid configured with modern design values
         st.dataframe(
             display_leaderboard, 
             use_container_width=True,
             column_config={
-                "Rank Position": st.column_config.NumberColumn("Rank 🏅", format="%d"),
+                "Rank Position": st.column_config.NumberColumn("Rank Position 🏅", format="%d"),
                 "Outlets Mapped": st.column_config.NumberColumn("Outlets Mapped", format="%d"),
                 "Till Date Visits": st.column_config.NumberColumn("Till Date Visits", format="%d")
             }
         )
-        
     else:
-        st.error(f"No active records indexed under the entered AE ID: {selected_ae}")
+        st.error(f"No records indexed under area segment parameter: {selected_ae}")
