@@ -300,7 +300,7 @@ if df_breeze is not None and df_master is not None and df_route is not None:
         # ------------------------------------------------------------------
         # UI COMPONENT: CUSTOM STYLED PERFORMANCE STANDINGS CIRCLE
         # ------------------------------------------------------------------
-        st.markdown("### Performance Standings")
+        st.markdown("### Performance Standings: ({selected_ae})")
         
         # Extract top 3 local area representatives
         top_3_ds = df_ae_filtered.sort_values(by='Rank', ascending=True).head(3)
