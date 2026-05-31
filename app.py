@@ -10,7 +10,15 @@ st.set_page_config(
 )
 
 # ------------------------------------------------------------------
-# PREMIUM CUSTOM DARK-MODE CSS INJECTION (FIXED HYPHENS & SPACES)
+# SYNC URL PARAMETERS WITH POPUP MODE (REMOVES GHOST BUTTONS)
+# ------------------------------------------------------------------
+if "show_cat" in st.query_params:
+    st.session_state['show_popup_category'] = st.query_params["show_cat"]
+else:
+    st.session_state['show_popup_category'] = None
+
+# ------------------------------------------------------------------
+# PREMIUM CUSTOM DARK MODE CSS INJECTION
 # ------------------------------------------------------------------
 st.markdown("""
     <style>
@@ -29,17 +37,41 @@ st.markdown("""
             box-shadow: 0 8px 32px 0 rgba(0, 0, 0, 0.37);
             backdrop-filter: blur(8px);
             -webkit-backdrop-filter: blur(8px);
-            transition: transform 0.3s ease, border-color 0.3s ease;
-            min-height: 160px; /* Forces identical card height regardless of text content */
+            min-height: 160px; 
             display: flex;
             flex-direction: column;
             justify-content: space-between;
-        }
-        .metric-card:hover {
-            transform: translateY(-5px);
-            border-color: #58a6ff;
+            margin-bottom: 10px;
         }
         
+        /* Interactive text link items styled inside the card boundary */
+        .category-link {
+            color: #58a6ff !important;
+            font-weight: 700 !important;
+            text-decoration: underline !important;
+            cursor: pointer !important;
+            transition: all 0.2s ease !important;
+        }
+        .category-link:hover {
+            color: #ffffff !important;
+            text-shadow: 0 0 10px rgba(88, 166, 255, 0.8);
+        }
+        
+        /* Premium Badges for Leaderboard ranks */
+        .rank-badge {
+            padding: 6px 12px;
+            border-radius: 20px;
+            font-weight: bold;
+            font-size: 13px;
+            display: inline-block;
+            text-align: center;
+            min-width: 80px;
+        }
+        .rank-1 { background-color: rgba(212, 175, 55, 0.2); color: #ffd700; border: 1px solid #ffd700; }
+        .rank-2 { background-color: rgba(192, 192, 192, 0.2); color: #c0c0c0; border: 1px solid #c0c0c0; }
+        .rank-3 { background-color: rgba(205, 127, 50, 0.2); color: #cd7f32; border: 1px solid #cd7f32; }
+        .rank-other { background-color: rgba(48, 54, 61, 0.4); color: #c9d1d9; border: 1px solid #30363d; }
+
         /* Clean typography styles */
         .metric-label {
             font-size: 14px;
@@ -60,40 +92,15 @@ st.markdown("""
             text-shadow: 0 0 12px rgba(88, 166, 255, 0.6);
             color: #58a6ff;
         }
-        
-        /* Premium Badges for Leaderboard ranks */
-        .rank-badge {
-            padding: 6px 12px;
-            border-radius: 20px;
-            font-weight: bold;
-            font-size: 13px;
-            display: inline-block;
-            text-align: center;
-            min-width: 80px;
-        }
-        .rank-1 { background-color: rgba(212, 175, 55, 0.2); color: #ffd700; border: 1px solid #ffd700; }
-        .rank-2 { background-color: rgba(192, 192, 192, 0.2); color: #c0c0c0; border: 1px solid #c0c0c0; }
-        .rank-3 { background-color: rgba(205, 127, 50, 0.2); color: #cd7f32; border: 1px solid #cd7f32; }
-        .rank-other { background-color: rgba(48, 54, 61, 0.4); color: #c9d1d9; border: 1px solid #30363d; }
-        
-        /* Smooth Custom styled title banner */
-        .title-banner {
-            background: linear-gradient(90deg, #1f6feb, #58a6ff);
-            -webkit-background-clip: text;
-            -webkit-text-fill-color: transparent;
-            font-weight: 800;
-            font-size: 42px;
-            margin-bottom: 0px;
-        }
 
-        /* Bold, High-Impact, Mechanical Subheading Design */
+        /* Bold, High Impact, Mechanical Subheading Design */
         .subtitle-league-container {
-            margin-top: -5px;
+            margin-top: 5px;
             margin-bottom: 25px;
             padding: 2px 0px;
         }
         .subtitle-league {
-            font-family: 'Segoe UI', -apple-system, BlinkMacSystemFont, Roboto, sans-serif;
+            font-family: 'Segoe UI', apple-system, BlinkMacSystemFont, Roboto, sans-serif;
             font-weight: 900 !important;
             font-size: 28px !important;
             letter-spacing: 5px !important;
@@ -124,16 +131,16 @@ st.markdown("""
 
 # App Logo Header Banner
 st.markdown('<div class="subtitle-league-container"><span class="subtitle-league">DHURANDAR LEAGUE</span></div>', unsafe_allow_html=True)
-st.markdown("---")
+st.markdown("   ")
 
-# ------------------------------------------------------------------
+#                                                                   
 # CONFIGURATION: GOOGLE DRIVE FILE SHARING IDs
-# ------------------------------------------------------------------
+#                                                                   
 DHURANDAR_SHARE_ID = "1N4kEbF621Nhzjg4eJfGz9fkGIXEQ_LA5" 
 OUTLET_MASTER_SHARE_ID = "1kxGk5IvkPLGLE0Dg6vCxQ1NeT8V8xPQu" 
 RADAR_ROUTE_SHARE_ID = "1AKW089LhV37onfSEmk4H6l86f4MsQTCr"
 
-# Formulating direct-download links
+# Formulating direct download links
 URL_BREEZE = f"https://docs.google.com/uc?export=download&id={DHURANDAR_SHARE_ID}"
 URL_MASTER = f"https://docs.google.com/uc?export=download&id={OUTLET_MASTER_SHARE_ID}"
 URL_ROUTE = f"https://docs.google.com/uc?export=download&id={RADAR_ROUTE_SHARE_ID}"
@@ -161,9 +168,9 @@ elif status_msg != "success":
     st.markdown(f"**Error Details:** `{status_msg}`")
     st.stop()
 
-# ------------------------------------------------------------------
+#                                                                   
 # DATA PIPELINE & CALCULATIONS ENGINE
-# ------------------------------------------------------------------
+#                                                                   
 if df_breeze is not None and df_master is not None and df_route is not None:
     
     # Text sanitization pipeline
@@ -175,7 +182,7 @@ if df_breeze is not None and df_master is not None and df_route is not None:
     df_master['DS/TL ID_str'] = df_master['DS/TL ID'].astype(str).str.strip()
     df_route['DS Id_str'] = df_route['DS Id'].astype(str).str.strip()
     
-    # Map out cross-sheet relationships
+    # Map out cross sheet relationships
     ds_to_wd_dict = df_master.groupby('DS/TL ID_str')['WD ID'].first().to_dict()
     van_ds_to_wd_dict = df_route.groupby('DS Id_str')['WD Code'].first().to_dict()
     
@@ -195,12 +202,117 @@ if df_breeze is not None and df_master is not None and df_route is not None:
         selected_ae = st.selectbox("Choose AE id", options=unique_ae_ids, index=0)
     
     # ------------------------------------------------------------------
+    # DATA ASSIGNMENT PARSERS & PRE-CALCULATIONS FOR FILTERED AE
+    # ------------------------------------------------------------------
+    df_ae_filtered = df_breeze[df_breeze['AE ID'] == selected_ae].copy()
+    
+    if not df_ae_filtered.empty:
+        qual_cols = [c for c in df_breeze.columns if 'till date qual' in c.lower()]
+        van_visit_col = qual_cols[2] if len(qual_cols) >= 3 else qual_cols[0]
+        
+        def get_resolved_metrics(row):
+            is_van = "van" in str(row['DS Type']).lower()
+            if is_van:
+                return pd.Series([pd.to_numeric(row['Outlet Mapped'], errors='coerce'), pd.to_numeric(row[van_visit_col], errors='coerce')])
+            return pd.Series([pd.to_numeric(row['Outlets Mapped'], errors='coerce'), pd.to_numeric(row['Till date Visit'], errors='coerce')])
+
+        df_ae_filtered[['Resolved_Mapped', 'Resolved_Visits']] = df_ae_filtered.apply(get_resolved_metrics, axis=1)
+        df_ae_filtered['Resolved_Mapped'] = df_ae_filtered['Resolved_Mapped'].fillna(0).astype(int)
+        df_ae_filtered['Resolved_Visits'] = df_ae_filtered['Resolved_Visits'].fillna(0).astype(int)
+        
+        # Summary variables computation
+        total_ds_count = len(df_ae_filtered)
+        total_outlets_mapped = df_ae_filtered['Resolved_Mapped'].sum()
+        total_effective_visits = df_ae_filtered['Resolved_Visits'].sum()
+        pct_uov = (total_effective_visits / total_outlets_mapped * 100) if total_outlets_mapped > 0 else 0.0
+
+        # Calculate counts
+        ds_types_lower = df_ae_filtered['DS Type'].astype(str).str.lower()
+        conv_count = (ds_types_lower.str.contains('conv')).sum()
+        rmd_count = (ds_types_lower.str.contains('rmd')).sum()
+        van_count = (ds_types_lower.str.contains('van')).sum()
+
+    # ------------------------------------------------------------------
+    # DYNAMIC INTERACTIVE DETAIL POPUP WINDOW MODAL (URL DRIVEN)
+    # ------------------------------------------------------------------
+    if st.session_state['show_popup_category'] is not None:
+        cat_selected = st.session_state['show_popup_category']
+        
+        if cat_selected == 'conv':
+            df_popup_base = df_ae_filtered[df_ae_filtered['DS Type'].astype(str).str.lower().str.contains('conv')].copy()
+            popup_label = "Conventional DS Segment"
+        elif cat_selected == 'rmd':
+            df_popup_base = df_ae_filtered[df_ae_filtered['DS Type'].astype(str).str.lower().str.contains('rmd')].copy()
+            popup_label = "RMD DS Segment"
+        else:
+            df_popup_base = df_ae_filtered[df_ae_filtered['DS Type'].astype(str).str.lower().str.contains('van')].copy()
+            popup_label = "Van DS Segment"
+
+        st.markdown(f"""
+            <div style="background: linear-gradient(135deg, #1c2128, #0d1117); border: 2px solid #58a6ff; border-radius: 16px; padding: 20px; margin-bottom: 25px; box-shadow: 0 0 20px rgba(88, 166, 255, 0.25);">
+                <h4 style="color: #ffffff; margin: 0 0 10px 0;">Detailed Summary: {popup_label} ({selected_ae})</h4>
+            </div>
+        """, unsafe_allow_html=True)
+        
+        pop_ctrl_1, pop_ctrl_2 = st.columns([3, 1])
+        
+        with pop_ctrl_1:
+            unique_popup_wds = sorted(df_popup_base['WD Code (Linked)'].dropna().astype(str).unique())
+            chosen_popup_wd = st.selectbox(
+                "Choose WD Code",
+                options=[""] + unique_popup_wds,
+                index=0,
+                format_func=lambda x: "Select WD Code (Showing All)..." if x == "" else f"WD Code: {x}",
+                key="wd_popup_search_filter"
+            )
+        
+        with pop_ctrl_2:
+            st.markdown("<div style='height:28px;'></div>", unsafe_allow_html=True)
+            if st.button("❌ Close Details", key="btn_close_popup_panel", use_container_width=True):
+                st.query_params.clear()
+                st.session_state['show_popup_category'] = None
+                st.rerun()
+
+        if chosen_popup_wd != "":
+            df_popup_filtered = df_popup_base[df_popup_base['WD Code (Linked)'].astype(str) == chosen_popup_wd].copy()
+        else:
+            df_popup_filtered = df_popup_base.copy()
+
+        popup_records = []
+        for _, prow in df_popup_filtered.iterrows():
+            p_name = prow['DS Name']
+            p_wd = prow['WD Code (Linked)'] if pd.notna(prow['WD Code (Linked)']) else 'N/A'
+            
+            if cat_selected == 'van':
+                p_qual = prow['Till Date Qualifed.1'] if 'Till Date Qualifed.1' in prow and pd.notna(prow['Till Date Qualifed.1']) else 0
+                p_visit = prow['Till Date Qualifed.2'] if 'Till Date Qualifed.2' in prow and pd.notna(prow['Till Date Qualifed.2']) else 0
+            else:
+                p_qual = prow['Till Date Qualifed'] if 'Till Date Qualifed' in prow and pd.notna(prow['Till Date Qualifed']) else 0
+                p_visit = prow['Till date Visit'] if 'Till date Visit' in prow and pd.notna(prow['Till date Visit']) else 0
+                
+            popup_records.append({
+                "DS Name": p_name,
+                "Linked WD Code": p_wd,
+                "Till Date Qualified": int(pd.to_numeric(p_qual, errors='coerce') if pd.notna(p_qual) else 0),
+                "Total Visit": int(pd.to_numeric(p_visit, errors='coerce') if pd.notna(p_visit) else 0)
+            })
+
+        df_popup_final_grid = pd.DataFrame(popup_records)
+        
+        if not df_popup_final_grid.empty:
+            st.dataframe(df_popup_final_grid.reset_index(drop=True), use_container_width=True)
+        else:
+            st.info("No active sales records mapped under the chosen filtration settings.")
+            
+        st.markdown("---")
+
+    # ------------------------------------------------------------------
     # UI COMPONENT: 🏆 GLOBAL DHURANDAR LEAGUE EXPANDER
     # ------------------------------------------------------------------
     df_global_top3 = df_breeze[df_breeze['Rank'].isin([1, 2, 3])].sort_values(by='Rank', ascending=True).copy()
     
     if not df_global_top3.empty:
-        with st.expander("👑 VIEW GLOBAL LEAGUE LEADERBOARD (RANK 1-3 QUALIFIERS)", expanded=False):
+        with st.expander("Global League Leaderboard (Rank 1-3)", expanded=False):
             for idx, row in df_global_top3.iterrows():
                 r = int(row['Rank'])
                 badge_class = f"rank-{r}"
@@ -222,53 +334,27 @@ if df_breeze is not None and df_master is not None and df_route is not None:
     st.markdown("<br>", unsafe_allow_html=True)
     
     # ------------------------------------------------------------------
-    # UI COMPONENT: 📊 LIVE METRIC GLASS CARDS (UNIFORM DESIGN)
+    # UI COMPONENT: 📊 LIVE METRIC GLASS CARDS (CLEAN INLINE TEXT LINKS)
     # ------------------------------------------------------------------
-    df_ae_filtered = df_breeze[df_breeze['AE ID'] == selected_ae].copy()
-    
     if not df_ae_filtered.empty:
-        # Resolve target duplicate data tracking sub-columns from Excel sheets
-        qual_cols = [c for c in df_breeze.columns if 'till date qual' in c.lower()]
-        van_visit_col = qual_cols[2] if len(qual_cols) >= 3 else qual_cols[0]
-        
-        def get_resolved_metrics(row):
-            is_van = "van" in str(row['DS Type']).lower()
-            if is_van:
-                return pd.Series([pd.to_numeric(row['Outlet Mapped'], errors='coerce'), pd.to_numeric(row[van_visit_col], errors='coerce')])
-            return pd.Series([pd.to_numeric(row['Outlets Mapped'], errors='coerce'), pd.to_numeric(row['Till date Visit'], errors='coerce')])
-
-        df_ae_filtered[['Resolved_Mapped', 'Resolved_Visits']] = df_ae_filtered.apply(get_resolved_metrics, axis=1)
-        df_ae_filtered['Resolved_Mapped'] = df_ae_filtered['Resolved_Mapped'].fillna(0).astype(int)
-        df_ae_filtered['Resolved_Visits'] = df_ae_filtered['Resolved_Visits'].fillna(0).astype(int)
-        
-        # Summary variables computation
-        total_ds_count = len(df_ae_filtered)
-        total_outlets_mapped = df_ae_filtered['Resolved_Mapped'].sum()
-        total_effective_visits = df_ae_filtered['Resolved_Visits'].sum()
-        pct_uov = (total_effective_visits / total_outlets_mapped * 100) if total_outlets_mapped > 0 else 0.0
-
-        # Calculate case-insensitive categorised counts specifically for the selected AE ID
-        ds_types_lower = df_ae_filtered['DS Type'].astype(str).str.lower()
-        conv_count = (ds_types_lower.str.contains('conv')).sum()
-        rmd_count = (ds_types_lower.str.contains('rmd')).sum()
-        van_count = (ds_types_lower.str.contains('van')).sum()
-
-        # Injecting structural HTML cards dynamically with precise uniform constraints
         c1, c2, c3 = st.columns(3)
+        
         with c1:
+            # Clickable text link objects targeting _self parameters completely locks the action within bounds
             st.markdown(f"""
                 <div class="metric-card">
                     <div>
                         <div class="metric-label">👥 Total DS Workforce</div>
                         <div class="metric-value">{total_ds_count} <span style="font-size:18px; color:#58a6ff;">Hawkers</span></div>
                     </div>
-                    <div style="margin-top: auto; border-top: 1px solid #30363d; padding-top: 10px; font-size: 12px; color: #8b949e; display: flex; justify-content: space-between; gap: 4px;">
-                        <span>Conv: <strong style="color: #ffffff;">{conv_count}</strong></span>
-                        <span>RMD: <strong style="color: #ffffff;">{rmd_count}</strong></span>
-                        <span>Van: <strong style="color: #ffffff;">{van_count}</strong></span>
+                    <div style="border-top: 1px solid #30363d; padding-top: 10px; font-size: 13px; color: #8b949e; display: flex; justify-content: space-between; gap: 4px; width: 100%;">
+                        <span>Conv: <a href="?show_cat=conv" target="_self" class="category-link">({conv_count})</a></span>
+                        <span>RMD: <a href="?show_cat=rmd" target="_self" class="category-link">({rmd_count})</a></span>
+                        <span>Van: <a href="?show_cat=van" target="_self" class="category-link">({van_count})</a></span>
                     </div>
                 </div>
             """, unsafe_allow_html=True)
+                    
         with c2:
             st.markdown(f"""
                 <div class="metric-card">
@@ -281,6 +367,7 @@ if df_breeze is not None and df_master is not None and df_route is not None:
                     </div>
                 </div>
             """, unsafe_allow_html=True)
+            
         with c3:
             st.markdown(f"""
                 <div class="metric-card">
