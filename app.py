@@ -10,7 +10,7 @@ st.set_page_config(
 )
 
 # ------------------------------------------------------------------
-# PREMIUM CUSTOM DARK-MODE CSS INJECTION
+# PREMIUM CUSTOM DARK-MODE CSS INJECTION (FIXED HYPHENS & SPACES)
 # ------------------------------------------------------------------
 st.markdown("""
     <style>
@@ -22,7 +22,7 @@ st.markdown("""
         
         /* Modern Glassmorphic Container Cards with Fixed Height for Uniformity */
         .metric-card {
-            background: linear-gradient(135px, rgba(22, 27, 34, 0.8), rgba(13, 17, 23, 0.8));
+            background: linear-gradient(135deg, rgba(22, 27, 34, 0.8), rgba(13, 17, 23, 0.8));
             border: 1px solid #30363d;
             border-radius: 16px;
             padding: 24px;
@@ -56,8 +56,8 @@ st.markdown("""
             font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
             margin-bottom: 4px;
         }
-        .metric glow {
-            text shadow: 0 0 12px rgba(88, 166, 255, 0.6);
+        .metric-glow {
+            text-shadow: 0 0 12px rgba(88, 166, 255, 0.6);
             color: #58a6ff;
         }
         
@@ -66,10 +66,10 @@ st.markdown("""
             padding: 6px 12px;
             border-radius: 20px;
             font-weight: bold;
-            font size: 13px;
-            display: inline block;
-            text align: center;
-            min width: 80px;
+            font-size: 13px;
+            display: inline-block;
+            text-align: center;
+            min-width: 80px;
         }
         .rank-1 { background-color: rgba(212, 175, 55, 0.2); color: #ffd700; border: 1px solid #ffd700; }
         .rank-2 { background-color: rgba(192, 192, 192, 0.2); color: #c0c0c0; border: 1px solid #c0c0c0; }
@@ -82,12 +82,12 @@ st.markdown("""
             -webkit-background-clip: text;
             -webkit-text-fill-color: transparent;
             font-weight: 800;
-            font size: 42px;
-            margin bottom: 0px;
+            font-size: 42px;
+            margin-bottom: 0px;
         }
 
-        /* Bold, High Impact, Mechanical Subheading Design */
-        .subtitle league container {
+        /* Bold, High-Impact, Mechanical Subheading Design */
+        .subtitle-league-container {
             margin-top: -5px;
             margin-bottom: 25px;
             padding: 2px 0px;
@@ -107,10 +107,10 @@ st.markdown("""
         .leaderboard-row {
             display: flex; 
             justify-content: space-between; 
-            align items: center; 
+            align-items: center; 
             background: linear-gradient(90deg, #161b22, #0d1117);
             padding: 16px 24px; 
-            margin bottom: 10px; 
+            margin-bottom: 10px; 
             border-radius: 12px; 
             border: 1px solid #30363d;
             transition: border-color 0.2s ease, background-color 0.2s ease;
@@ -124,7 +124,7 @@ st.markdown("""
 
 # App Logo Header Banner
 st.markdown('<p class="title-banner">BREEZE // Operational Performance Radar</p>', unsafe_allow_html=True)
-st.markdown('<div class="subtitle-league-container"><span class="subtitle-league">DHURANDAR LEAGUE</span></div>', unsafe_allow_html=True)
+st.markdown('<div class="subtitle-league-container"><span class="subtitle-league">⚔️ DHURANDAR LEAGUE</span></div>', unsafe_allow_html=True)
 st.markdown("---")
 
 # ------------------------------------------------------------------
@@ -298,9 +298,9 @@ if df_breeze is not None and df_master is not None and df_route is not None:
         st.markdown("<br><br>", unsafe_allow_html=True)
         
         # ------------------------------------------------------------------
-        # UI COMPONENT: CUSTOM STYLED PERFORMANCE STANDINGS CIRCLE
+        # UI COMPONENT: CUSTOM STYLED PERFORMANCE STANDINGS HEADING WITH ID
         # ------------------------------------------------------------------
-        st.markdown("### Performance Standings: ({selected_ae})")
+        st.markdown(f"### Performance Standings <span style='color: #58a6ff; font-weight: 400; font-size: 22px; margin-left: 8px;'>({selected_ae})</span>", unsafe_allow_html=True)
         
         # Extract top 3 local area representatives
         top_3_ds = df_ae_filtered.sort_values(by='Rank', ascending=True).head(3)
