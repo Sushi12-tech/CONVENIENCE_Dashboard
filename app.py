@@ -136,7 +136,7 @@ st.markdown("   ")
 #                                                                   
 # CONFIGURATION: GOOGLE DRIVE FILE SHARING IDs
 #                                                                   
-DHURANDAR_SHARE_ID = "1N4kEbF621Nhzjg4eJfGz9fkGIXEQ_LA5" 
+DHURANDAR_SHARE_ID = "1ofdBAMowgrFcf-NyjOW4QMFVh8Wk7OKi" 
 OUTLET_MASTER_SHARE_ID = "1kxGk5IvkPLGLE0Dg6vCxQ1NeT8V8xPQu" 
 RADAR_ROUTE_SHARE_ID = "1AKW089LhV37onfSEmk4H6l86f4MsQTCr"
 
