@@ -123,8 +123,7 @@ st.markdown("""
 """, unsafe_allow_html=True)
 
 # App Logo Header Banner
-st.markdown('<p class="title-banner">BREEZE // Operational Performance Radar</p>', unsafe_allow_html=True)
-st.markdown('<div class="subtitle-league-container"><span class="subtitle-league">⚔️ DHURANDAR LEAGUE</span></div>', unsafe_allow_html=True)
+st.markdown('<div class="subtitle-league-container"><span class="subtitle-league">DHURANDAR LEAGUE</span></div>', unsafe_allow_html=True)
 st.markdown("---")
 
 # ------------------------------------------------------------------
