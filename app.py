@@ -4,7 +4,7 @@ import os
 
 # Set up page layout to occupy full width with a custom page title
 st.set_page_config(
-    page_title="Dhurandhar League", 
+    page_title="Dhurandar League", 
     layout="wide", 
     page_icon="⚡"
 )
@@ -20,7 +20,7 @@ st.markdown("""
             color: #c9d1d9;
         }
         
-        /* Modern Glassmorphic Container Cards */
+        /* Modern Glassmorphic Container Cards with Fixed Height for Uniformity */
         .metric-card {
             background: linear-gradient(135px, rgba(22, 27, 34, 0.8), rgba(13, 17, 23, 0.8));
             border: 1px solid #30363d;
@@ -30,6 +30,10 @@ st.markdown("""
             backdrop-filter: blur(8px);
             -webkit-backdrop-filter: blur(8px);
             transition: transform 0.3s ease, border-color 0.3s ease;
+            min-height: 160px; /* Forces identical card height regardless of text content */
+            display: flex;
+            flex-direction: column;
+            justify-content: space-between;
         }
         .metric-card:hover {
             transform: translateY(-5px);
@@ -43,16 +47,17 @@ st.markdown("""
             letter-spacing: 1.5px;
             color: #8b949e;
             font-weight: 600;
-            margin-bottom: 8px;
+            margin-bottom: 4px;
         }
         .metric-value {
             font-size: 36px;
             font-weight: 700;
             color: #ffffff;
             font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            margin-bottom: 4px;
         }
-        .metric-glow {
-            text-shadow: 0 0 12px rgba(88, 166, 255, 0.6);
+        .metric glow {
+            text shadow: 0 0 12px rgba(88, 166, 255, 0.6);
             color: #58a6ff;
         }
         
@@ -61,10 +66,10 @@ st.markdown("""
             padding: 6px 12px;
             border-radius: 20px;
             font-weight: bold;
-            font-size: 13px;
-            display: inline-block;
-            text-align: center;
-            min-width: 80px;
+            font size: 13px;
+            display: inline block;
+            text align: center;
+            min width: 80px;
         }
         .rank-1 { background-color: rgba(212, 175, 55, 0.2); color: #ffd700; border: 1px solid #ffd700; }
         .rank-2 { background-color: rgba(192, 192, 192, 0.2); color: #c0c0c0; border: 1px solid #c0c0c0; }
@@ -77,12 +82,12 @@ st.markdown("""
             -webkit-background-clip: text;
             -webkit-text-fill-color: transparent;
             font-weight: 800;
-            font-size: 42px;
-            margin-bottom: 0px;
+            font size: 42px;
+            margin bottom: 0px;
         }
 
-        /* Bold, High-Impact, Mechanical Subheading Design */
-        .subtitle-league-container {
+        /* Bold, High Impact, Mechanical Subheading Design */
+        .subtitle league container {
             margin-top: -5px;
             margin-bottom: 25px;
             padding: 2px 0px;
@@ -102,10 +107,10 @@ st.markdown("""
         .leaderboard-row {
             display: flex; 
             justify-content: space-between; 
-            align-items: center; 
+            align items: center; 
             background: linear-gradient(90deg, #161b22, #0d1117);
             padding: 16px 24px; 
-            margin-bottom: 10px; 
+            margin bottom: 10px; 
             border-radius: 12px; 
             border: 1px solid #30363d;
             transition: border-color 0.2s ease, background-color 0.2s ease;
@@ -118,6 +123,7 @@ st.markdown("""
 """, unsafe_allow_html=True)
 
 # App Logo Header Banner
+st.markdown('<p class="title-banner">BREEZE // Operational Performance Radar</p>', unsafe_allow_html=True)
 st.markdown('<div class="subtitle-league-container"><span class="subtitle-league">DHURANDAR LEAGUE</span></div>', unsafe_allow_html=True)
 st.markdown("---")
 
@@ -187,7 +193,7 @@ if df_breeze is not None and df_master is not None and df_route is not None:
     # Styled Input Selector Widget Block
     col_sb, _ = st.columns([2, 2])
     with col_sb:
-        selected_ae = st.selectbox("🌐 CHOOSE EXECUTIVE AREA ENGINEER ID", options=unique_ae_ids, index=0)
+        selected_ae = st.selectbox("Choose AE id", options=unique_ae_ids, index=0)
     
     # ------------------------------------------------------------------
     # UI COMPONENT: 🏆 GLOBAL DHURANDAR LEAGUE EXPANDER
@@ -217,7 +223,7 @@ if df_breeze is not None and df_master is not None and df_route is not None:
     st.markdown("<br>", unsafe_allow_html=True)
     
     # ------------------------------------------------------------------
-    # UI COMPONENT: 📊 LIVE METRIC GLASS CARDS
+    # UI COMPONENT: 📊 LIVE METRIC GLASS CARDS (UNIFORM DESIGN)
     # ------------------------------------------------------------------
     df_ae_filtered = df_breeze[df_breeze['AE ID'] == selected_ae].copy()
     
@@ -236,40 +242,65 @@ if df_breeze is not None and df_master is not None and df_route is not None:
         df_ae_filtered['Resolved_Mapped'] = df_ae_filtered['Resolved_Mapped'].fillna(0).astype(int)
         df_ae_filtered['Resolved_Visits'] = df_ae_filtered['Resolved_Visits'].fillna(0).astype(int)
         
+        # Summary variables computation
         total_ds_count = len(df_ae_filtered)
         total_outlets_mapped = df_ae_filtered['Resolved_Mapped'].sum()
         total_effective_visits = df_ae_filtered['Resolved_Visits'].sum()
         pct_uov = (total_effective_visits / total_outlets_mapped * 100) if total_outlets_mapped > 0 else 0.0
 
+        # Calculate case-insensitive categorised counts specifically for the selected AE ID
+        ds_types_lower = df_ae_filtered['DS Type'].astype(str).str.lower()
+        conv_count = (ds_types_lower.str.contains('conv')).sum()
+        rmd_count = (ds_types_lower.str.contains('rmd')).sum()
+        van_count = (ds_types_lower.str.contains('van')).sum()
+
+        # Injecting structural HTML cards dynamically with precise uniform constraints
         c1, c2, c3 = st.columns(3)
         with c1:
             st.markdown(f"""
                 <div class="metric-card">
-                    <div class="metric-label">👥 Total DS Workforce</div>
-                    <div class="metric-value">{total_ds_count} <span style="font-size:18px; color:#58a6ff;">Reps</span></div>
+                    <div>
+                        <div class="metric-label">👥 Total DS Workforce</div>
+                        <div class="metric-value">{total_ds_count} <span style="font-size:18px; color:#58a6ff;">Hawkers</span></div>
+                    </div>
+                    <div style="margin-top: auto; border-top: 1px solid #30363d; padding-top: 10px; font-size: 12px; color: #8b949e; display: flex; justify-content: space-between; gap: 4px;">
+                        <span>Conv: <strong style="color: #ffffff;">{conv_count}</strong></span>
+                        <span>RMD: <strong style="color: #ffffff;">{rmd_count}</strong></span>
+                        <span>Van: <strong style="color: #ffffff;">{van_count}</strong></span>
+                    </div>
                 </div>
             """, unsafe_allow_html=True)
         with c2:
             st.markdown(f"""
                 <div class="metric-card">
-                    <div class="metric-label">📍 Total Outlets Mapped</div>
-                    <div class="metric-value">{total_outlets_mapped:,} <span style="font-size:18px; color:#34d399;">Stores</span></div>
+                    <div>
+                        <div class="metric-label">📍 Total Outlets Mapped</div>
+                        <div class="metric-value">{total_outlets_mapped:,} <span style="font-size:18px; color:#34d399;">Stores</span></div>
+                    </div>
+                    <div style="margin-top: auto; border-top: 1px solid transparent; padding-top: 10px; font-size: 12px; color: #8b949e; text-align: left;">
+                        Database Records Active
+                    </div>
                 </div>
             """, unsafe_allow_html=True)
         with c3:
             st.markdown(f"""
                 <div class="metric-card">
-                    <div class="metric-label">📈 Overall Efficiency (% UOV)</div>
-                    <div class="metric-value metric-glow">{pct_uov:.2f}%</div>
+                    <div>
+                        <div class="metric-label">📈 Overall Efficiency</div>
+                        <div class="metric-value metric-glow">{pct_uov:.2f}%</div>
+                    </div>
+                    <div style="margin-top: auto; border-top: 1px solid transparent; padding-top: 10px; font-size: 12px; color: #8b949e; text-align: left;">
+                        Unique Visit Coverage (% UOV)
+                    </div>
                 </div>
             """, unsafe_allow_html=True)
 
         st.markdown("<br><br>", unsafe_allow_html=True)
         
         # ------------------------------------------------------------------
-        # NEW DESIGN COMPONENT: CUSTOM STYLED PERFORMANCE STANDINGS CIRCLE
+        # UI COMPONENT: CUSTOM STYLED PERFORMANCE STANDINGS CIRCLE
         # ------------------------------------------------------------------
-        st.markdown(f"### 🚀 Performance Standings: Executive Circle ({selected_ae})")
+        st.markdown("### Performance Standings")
         
         # Extract top 3 local area representatives
         top_3_ds = df_ae_filtered.sort_values(by='Rank', ascending=True).head(3)
@@ -277,7 +308,6 @@ if df_breeze is not None and df_master is not None and df_route is not None:
         for idx, row in top_3_ds.iterrows():
             r = int(row['Rank']) if pd.notna(row['Rank']) else "N/A"
             
-            # Determine appropriate badge accent color configuration based on position numbers
             if r == 1:
                 badge_class = "rank-1"
                 row_border = "border-left: 5px solid #ffd700;"
@@ -293,7 +323,6 @@ if df_breeze is not None and df_master is not None and df_route is not None:
                 
             wd_code_display = row['WD Code (Linked)'] if pd.notna(row['WD Code (Linked)']) else 'N/A'
             
-            # Rendering custom stylized HTML row components inside the dashboard UI
             st.markdown(f"""
                 <div class="leaderboard-row" style="{row_border}">
                     <div style="display: flex; align-items: center; gap: 20px;">
