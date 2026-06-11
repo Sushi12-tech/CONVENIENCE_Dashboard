@@ -282,7 +282,9 @@ if df_breeze is not None and df_master is not None and df_route is not None:
         for _, prow in df_popup_filtered.iterrows():
             p_name = prow['DS Name']
             p_wd = prow['WD Code (Linked)'] if pd.notna(prow['WD Code (Linked)']) else 'N/A'
-            
+				
+            p_mapped = int(prow['Resolved_Mapped'])
+
             if cat_selected == 'van':
                 p_qual = prow['Till Date Qualifed.1'] if 'Till Date Qualifed.1' in prow and pd.notna(prow['Till Date Qualifed.1']) else 0
                 p_visit = prow['Till Date Qualifed.2'] if 'Till Date Qualifed.2' in prow and pd.notna(prow['Till Date Qualifed.2']) else 0
@@ -294,7 +296,8 @@ if df_breeze is not None and df_master is not None and df_route is not None:
                 "DS Name": p_name,
                 "Linked WD Code": p_wd,
                 "Till Date Qualified": int(pd.to_numeric(p_qual, errors='coerce') if pd.notna(p_qual) else 0),
-                "Total Visit": int(pd.to_numeric(p_visit, errors='coerce') if pd.notna(p_visit) else 0)
+                "Total Visit": int(pd.to_numeric(p_visit, errors='coerce') if pd.notna(p_visit) else 0),
+		"Total Mapped Outlet": p_mapped
             })
 
         df_popup_final_grid = pd.DataFrame(popup_records)
@@ -386,7 +389,7 @@ if df_breeze is not None and df_master is not None and df_route is not None:
         # ------------------------------------------------------------------
         # UI COMPONENT: CUSTOM STYLED PERFORMANCE STANDINGS HEADING WITH ID
         # ------------------------------------------------------------------
-        st.markdown(f"### Performance Standings <span style='color: #58a6ff; font-weight: 400; font-size: 22px; margin-left: 8px;'>({selected_ae})</span>", unsafe_allow_html=True)
+        st.markdown(f"### Performance Standings <span style='color: #58a6ff; font weight: 400; font size: 22px; margin left: 8px;'>({selected_ae})</span>", unsafe_allow_html=True)
         
         # Extract top 3 local area representatives
         top_3_ds = df_ae_filtered.sort_values(by='Rank', ascending=True).head(3)
